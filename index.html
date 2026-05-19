@@ -164,13 +164,23 @@
     position: absolute;
     top: -10px;
     left: 50%;
-    transform: translateX(-50%);
     width: 56px;
     height: 78px;
     z-index: 5;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    transform: translateX(-50%) rotate(0deg);
+    transform-origin: 50% 28%;
   }
   .pointer svg { width: 100%; height: 100%; }
+  /* 转盘扇区切换时，指针被拨一下再弹回来 */
+  @keyframes pointerKick {
+    0%   { transform: translateX(-50%) rotate(0deg); }
+    25%  { transform: translateX(-50%) rotate(18deg); }
+    55%  { transform: translateX(-50%) rotate(-6deg); }
+    80%  { transform: translateX(-50%) rotate(3deg); }
+    100% { transform: translateX(-50%) rotate(0deg); }
+  }
+  .pointer.kick { animation: pointerKick 0.26s cubic-bezier(.34,1.56,.64,1); }
 
   /* 中心按钮 */
   .spin-btn {
@@ -236,31 +246,84 @@
     border: 1px solid rgba(255,255,255,0.2);
     backdrop-filter: blur(10px);
     border-radius: 18px;
-    padding: 16px 18px;
+    padding: 18px 16px 16px;
     margin-top: 8px;
   }
   .prize-list h3 {
     font-size: 15px;
     color: #ffd86b;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     text-align: center;
     letter-spacing: 1px;
   }
   .prize-list ul {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
   }
-  .prize-list li {
-    font-size: 13px;
-    color: #ffe6f3;
-    padding: 6px 10px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 10px;
+  @media (max-width: 380px) {
+    .prize-list ul { grid-template-columns: repeat(2, 1fr); }
+  }
+  .prize-card {
+    position: relative;
+    background: linear-gradient(135deg, var(--c1, #ff8ac0), var(--c2, #c0247c));
+    border-radius: 14px;
+    padding: 14px 6px 10px;
+    text-align: center;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    box-shadow:
+      0 6px 16px rgba(0,0,0,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.45),
+      inset 0 -2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+    cursor: default;
+  }
+  .prize-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 45%);
+    pointer-events: none;
+  }
+  .prize-card:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow:
+      0 12px 22px rgba(0,0,0,0.32),
+      inset 0 1px 0 rgba(255,255,255,0.55),
+      inset 0 -2px 6px rgba(0,0,0,0.15);
+  }
+  .prize-card .prize-emoji {
+    font-size: 30px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .prize-card:hover .prize-emoji {
+    transform: scale(1.18) rotate(-8deg);
+  }
+  .prize-card .prize-name {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    letter-spacing: 0.5px;
+  }
+  .prize-card.rare::after {
+    content: '✨';
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 11px;
+    animation: rareTwinkle 1.8s ease-in-out infinite;
+  }
+  @keyframes rareTwinkle {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.25); }
   }
 
   /* 弹窗 */
@@ -509,6 +572,28 @@
   .music-btn:hover { background: rgba(255,255,255,0.2); }
   .music-btn:active { transform: scale(0.9); }
 
+  /* 背景音乐曲目提示 */
+  .track-toast {
+    position: fixed;
+    top: 68px;
+    right: 50px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(10px);
+    padding: 6px 14px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    white-space: nowrap;
+  }
+  .track-toast.show { opacity: 1; transform: translateY(0); }
+
   .shake-hint {
     position: fixed;
     top: 72px;
@@ -619,15 +704,42 @@
   <div class="prize-list">
     <h3>🎁 奖品池 🎁</h3>
     <ul>
-      <li>🧋 一杯奶茶</li>
-      <li>🍢 烧烤大餐</li>
-      <li>🎂 一个小蛋糕</li>
-      <li>🍿 看一场电影</li>
-      <li>🌹 一束玫瑰花</li>
-      <li>💄 一支口红</li>
-      <li>🛍️ 陪你逛一天街</li>
-      <li>🥩 一顿牛排</li>
-      <li>😢 谢谢惠顾</li>
+      <li class="prize-card rare" style="--c1:#ffb6dc;--c2:#ff6fa8">
+        <span class="prize-emoji">🧋</span>
+        <span class="prize-name">一杯奶茶</span>
+      </li>
+      <li class="prize-card rare" style="--c1:#ff8ec0;--c2:#c0247c">
+        <span class="prize-emoji">🍢</span>
+        <span class="prize-name">烧烤大餐</span>
+      </li>
+      <li class="prize-card rare" style="--c1:#ffe17a;--c2:#ff8a4a">
+        <span class="prize-emoji">🎂</span>
+        <span class="prize-name">一个小蛋糕</span>
+      </li>
+      <li class="prize-card" style="--c1:#7dd3fc;--c2:#3b82f6">
+        <span class="prize-emoji">🍿</span>
+        <span class="prize-name">看一场电影</span>
+      </li>
+      <li class="prize-card" style="--c1:#ffb84a;--c2:#ef4444">
+        <span class="prize-emoji">🌹</span>
+        <span class="prize-name">一束玫瑰花</span>
+      </li>
+      <li class="prize-card" style="--c1:#c19bff;--c2:#7c3aed">
+        <span class="prize-emoji">💄</span>
+        <span class="prize-name">一支口红</span>
+      </li>
+      <li class="prize-card" style="--c1:#f9a8d4;--c2:#a855f7">
+        <span class="prize-emoji">🛍️</span>
+        <span class="prize-name">陪你逛街</span>
+      </li>
+      <li class="prize-card" style="--c1:#fda4af;--c2:#be123c">
+        <span class="prize-emoji">🥩</span>
+        <span class="prize-name">一顿牛排</span>
+      </li>
+      <li class="prize-card" style="--c1:#94a3b8;--c2:#475569">
+        <span class="prize-emoji">😢</span>
+        <span class="prize-name">谢谢惠顾</span>
+      </li>
     </ul>
   </div>
 
@@ -1079,10 +1191,192 @@
     });
   }
 
-  // ===== 背景音乐：合成 4 和弦循环 =====
+  // ===== 背景音乐：4 种风格，每次打开随机一个 =====
   let bgGain = null, bgFilter = null, bgInterval = null, bgNextTime = 0, bgChordIdx = 0;
+
+  // —— 四种曲风的 schedule 函数。返回值是"下一段从多少秒后开始"。
+  function scheduleDreamy(ctx, idx, t0, out) {
+    const chords = [
+      [261.63, 329.63, 392.00],   // C
+      [220.00, 261.63, 329.63],   // Am
+      [174.61, 220.00, 261.63],   // F
+      [196.00, 246.94, 293.66],   // G
+    ];
+    const dur = 3.2;
+    const chord = chords[idx % chords.length];
+    chord.forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.6, t0 + 0.8);
+      g.gain.setValueAtTime(0.6, t0 + dur - 0.6);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
+      o.connect(g).connect(out);
+      o.start(t0); o.stop(t0 + dur + 0.1);
+      if (i === 2) {
+        const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+        o2.type = 'triangle'; o2.frequency.value = f * 2;
+        g2.gain.setValueAtTime(0, t0 + 0.3);
+        g2.gain.linearRampToValueAtTime(0.15, t0 + 0.5);
+        g2.gain.exponentialRampToValueAtTime(0.001, t0 + 1.5);
+        o2.connect(g2).connect(out);
+        o2.start(t0 + 0.3); o2.stop(t0 + 1.6);
+      }
+    });
+    return dur - 0.15;
+  }
+
+  function scheduleSweet(ctx, idx, t0, out) {
+    // C - G - Am - F：经典甜蜜流行进行
+    const chords = [
+      [261.63, 329.63, 392.00],
+      [196.00, 246.94, 293.66],
+      [220.00, 261.63, 329.63],
+      [174.61, 220.00, 261.63],
+    ];
+    const dur = 1.8;
+    const chord = chords[idx % chords.length];
+    // 软 pad
+    chord.forEach(f => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.18, t0 + 0.12);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
+      o.connect(g).connect(out);
+      o.start(t0); o.stop(t0 + dur + 0.05);
+    });
+    // 上方跳跃旋律（高八度琶音）
+    const melody = [chord[0]*2, chord[2]*2, chord[1]*2, chord[2]*2];
+    const noteDur = dur / melody.length;
+    melody.forEach((f, i) => {
+      const tn = t0 + i * noteDur;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, tn);
+      g.gain.linearRampToValueAtTime(0.22, tn + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tn + noteDur * 0.92);
+      o.connect(g).connect(out);
+      o.start(tn); o.stop(tn + noteDur);
+    });
+    return dur - 0.05;
+  }
+
+  function scheduleLofi(ctx, idx, t0, out) {
+    // Cmaj7 - Am7 - Dm7 - G7：经典爵士四和弦
+    const chords = [
+      [261.63, 329.63, 392.00, 493.88],
+      [220.00, 261.63, 329.63, 392.00],
+      [146.83, 174.61, 220.00, 261.63],
+      [196.00, 246.94, 293.66, 349.23],
+    ];
+    const dur = 4.0;
+    const chord = chords[idx % chords.length];
+    // 低八度 bass
+    const ob = ctx.createOscillator(), gb = ctx.createGain();
+    ob.type = 'sine'; ob.frequency.value = chord[0] / 2;
+    gb.gain.setValueAtTime(0, t0);
+    gb.gain.linearRampToValueAtTime(0.42, t0 + 0.8);
+    gb.gain.setValueAtTime(0.42, t0 + dur - 0.8);
+    gb.gain.linearRampToValueAtTime(0, t0 + dur);
+    ob.connect(gb).connect(out);
+    ob.start(t0); ob.stop(t0 + dur + 0.1);
+    // 上层和弦音（七度音稍弱）
+    chord.forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      const target = i === chord.length - 1 ? 0.18 : 0.34;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(target, t0 + 1.2);
+      g.gain.setValueAtTime(target, t0 + dur - 1.0);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
+      o.connect(g).connect(out);
+      o.start(t0); o.stop(t0 + dur + 0.1);
+    });
+    return dur - 0.2;
+  }
+
+  function scheduleCN(ctx, idx, t0, out) {
+    // 古风：C 持续低音 + 五声音阶拨弦
+    const dur = 3.0;
+    // 持续低音 drone
+    const od = ctx.createOscillator(), gd = ctx.createGain();
+    od.type = 'sine'; od.frequency.value = 130.81; // C3
+    gd.gain.setValueAtTime(0, t0);
+    gd.gain.linearRampToValueAtTime(0.22, t0 + 0.7);
+    gd.gain.setValueAtTime(0.22, t0 + dur - 0.6);
+    gd.gain.linearRampToValueAtTime(0, t0 + dur);
+    od.connect(gd).connect(out);
+    od.start(t0); od.stop(t0 + dur + 0.1);
+    // 中段和声变化
+    const midPads = [
+      [261.63, 392.00],
+      [293.66, 392.00],
+      [261.63, 349.23],
+      [196.00, 293.66],
+    ];
+    midPads[idx % midPads.length].forEach(f => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.14, t0 + 0.9);
+      g.gain.setValueAtTime(0.14, t0 + dur - 0.6);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
+      o.connect(g).connect(out);
+      o.start(t0); o.stop(t0 + dur + 0.1);
+    });
+    // 五声音阶拨弦旋律：C D E G A
+    const pent = [523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33];
+    const noteCount = 4;
+    const noteDur = dur / noteCount;
+    for (let i = 0; i < noteCount; i++) {
+      const f = pent[(idx * noteCount + i) % pent.length];
+      const tn = t0 + i * noteDur;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, tn);
+      g.gain.linearRampToValueAtTime(0.24, tn + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, tn + noteDur * 0.95);
+      o.connect(g).connect(out);
+      o.start(tn); o.stop(tn + noteDur);
+    }
+    return dur - 0.15;
+  }
+
+  const TRACKS = [
+    { key: 'dreamy', name: '🌙 梦境',      filter: 900,  gain: 0.045, schedule: scheduleDreamy },
+    { key: 'sweet',  name: '💕 甜蜜跳跳',  filter: 1800, gain: 0.038, schedule: scheduleSweet  },
+    { key: 'lofi',   name: '☕ 慵懒 Lo-Fi', filter: 650,  gain: 0.055, schedule: scheduleLofi   },
+    { key: 'cn',     name: '🏮 古风小调',  filter: 1400, gain: 0.04,  schedule: scheduleCN     },
+  ];
+
+  // 每次打开页面随机一首（避开上次那首）
+  const currentTrack = (function pickTrack() {
+    const last = localStorage.getItem('lottery_last_track');
+    const pool = TRACKS.filter(t => t.key !== last);
+    const t = (pool.length ? pool : TRACKS)[Math.floor(Math.random() * (pool.length || TRACKS.length))];
+    localStorage.setItem('lottery_last_track', t.key);
+    return t;
+  })();
+
+  // 顶部短暂提示曲目名
+  function showTrackToast(name) {
+    let t = document.getElementById('trackToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'trackToast';
+      t.className = 'track-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = '♪ ' + name;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
   let musicOn = localStorage.getItem('lottery_music') === '1';
   const musicBtn = document.getElementById('musicBtn');
+  musicBtn.title = '背景音乐：' + currentTrack.name;
   if (musicOn) musicBtn.classList.add('on');
   musicBtn.addEventListener('click', () => {
     musicOn = !musicOn;
@@ -1090,62 +1384,31 @@
     musicBtn.classList.toggle('on', musicOn);
     if (musicOn) startBgMusic(); else stopBgMusic();
   });
+
   function startBgMusic() {
     const ctx = ensureAudio(); if (!ctx || bgGain) return;
     bgGain = ctx.createGain();
     bgGain.gain.value = 0;
-    bgGain.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 1.2);
+    bgGain.gain.linearRampToValueAtTime(currentTrack.gain, ctx.currentTime + 1.2);
     bgFilter = ctx.createBiquadFilter();
     bgFilter.type = 'lowpass';
-    bgFilter.frequency.value = 900;
+    bgFilter.frequency.value = currentTrack.filter;
     bgFilter.Q.value = 0.7;
     bgFilter.connect(bgGain).connect(ctx.destination);
-    const chords = [
-      [261.63, 329.63, 392.00],   // C
-      [220.00, 261.63, 329.63],   // Am
-      [174.61, 220.00, 261.63],   // F
-      [196.00, 246.94, 293.66],   // G
-    ];
     bgNextTime = ctx.currentTime + 0.1;
     bgChordIdx = 0;
-    const dur = 3.2;
-    function schedule() {
+    function step() {
       if (!bgGain) return;
-      const chord = chords[bgChordIdx % chords.length];
-      const t0 = bgNextTime;
-      chord.forEach((f, i) => {
-        // 主和弦音
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = 'sine';
-        o.frequency.value = f;
-        g.gain.setValueAtTime(0, t0);
-        g.gain.linearRampToValueAtTime(0.6, t0 + 0.8);
-        g.gain.setValueAtTime(0.6, t0 + dur - 0.6);
-        g.gain.linearRampToValueAtTime(0, t0 + dur);
-        o.connect(g).connect(bgFilter);
-        o.start(t0); o.stop(t0 + dur + 0.1);
-        // 高八度铃声点缀
-        if (i === 2) {
-          const o2 = ctx.createOscillator();
-          const g2 = ctx.createGain();
-          o2.type = 'triangle';
-          o2.frequency.value = f * 2;
-          g2.gain.setValueAtTime(0, t0 + 0.3);
-          g2.gain.linearRampToValueAtTime(0.15, t0 + 0.5);
-          g2.gain.exponentialRampToValueAtTime(0.001, t0 + 1.5);
-          o2.connect(g2).connect(bgFilter);
-          o2.start(t0 + 0.3); o2.stop(t0 + 1.6);
-        }
-      });
-      bgNextTime += dur - 0.15;
+      const advance = currentTrack.schedule(ctx, bgChordIdx, bgNextTime, bgFilter);
+      bgNextTime += advance;
       bgChordIdx++;
     }
-    for (let i = 0; i < 4; i++) schedule();
+    for (let i = 0; i < 4; i++) step();
     bgInterval = setInterval(() => {
       if (!bgGain) return;
-      if (bgNextTime - ctx.currentTime < 4) schedule();
+      if (bgNextTime - ctx.currentTime < 4) step();
     }, 1000);
+    showTrackToast(currentTrack.name);
   }
   function stopBgMusic() {
     if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
@@ -1199,9 +1462,18 @@
     }
   }
 
-  // 根据 wheel 实际 transform 矩阵实时触发滴答
+  // 指针被扇区边缘拨一下的回弹动画
+  const pointerEl = document.querySelector('.pointer');
+  function kickPointer() {
+    if (!pointerEl) return;
+    pointerEl.classList.remove('kick');
+    // 强制 reflow 让动画重新触发
+    void pointerEl.offsetWidth;
+    pointerEl.classList.add('kick');
+  }
+
+  // 根据 wheel 实际 transform 矩阵实时触发滴答 + 指针拨动
   function startTickLoop(durationMs) {
-    if (muted) return;
     const startTime = performance.now();
     let lastIdx = -999;
     function frame() {
@@ -1221,6 +1493,7 @@
       if (idx !== lastIdx) {
         lastIdx = idx;
         playTick();
+        kickPointer();
       }
       requestAnimationFrame(frame);
     }
