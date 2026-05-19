@@ -338,6 +338,44 @@
     transition: transform 0.15s;
   }
   .modal button:active { transform: scale(0.95); }
+  .modal .hug-btn {
+    background: linear-gradient(135deg, #ffd86b, #ff8a4a);
+    box-shadow: 0 8px 20px rgba(255, 138, 74, 0.4);
+  }
+  .love-letter p {
+    font-family: "Kaiti SC", "STKaiti", serif;
+    color: #6e2a55 !important;
+  }
+
+  /* 鼠标轨迹爱心 */
+  .trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 18px;
+    user-select: none;
+    animation: trailFly 1.4s ease-out forwards;
+    will-change: transform, opacity;
+  }
+  @keyframes trailFly {
+    0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    100% { transform: translate(-50%, -180%) scale(1.4) rotate(20deg); opacity: 0; }
+  }
+
+  /* 大爱心爆炸 */
+  .boom {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    font-size: 28px;
+    user-select: none;
+    animation: boomFly 2.2s ease-out forwards;
+  }
+  @keyframes boomFly {
+    0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(1.4); opacity: 0; }
+  }
 
   /* 彩带 */
   .confetti {
@@ -396,7 +434,7 @@
 
   <header>
     <h1>✨ 宝贝の幸运大转盘 ✨</h1>
-    <div class="subtitle">献给我最爱的小可爱 💖 每天一次哟～</div>
+    <div class="subtitle" id="subtitle">献给我最爱的小可爱 💖 每天一次哟～</div>
   </header>
 
   <div class="info">
@@ -453,7 +491,25 @@
       <h2 id="resultTitle">恭喜中奖！</h2>
       <div class="prize-name" id="resultPrize">奶茶</div>
       <p id="resultMsg">宝贝运气真好～ 这杯奶茶我请！</p>
-      <button id="closeBtn">好哒～</button>
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button id="hugBtn" class="hug-btn" style="display:none">🥺 再抱抱</button>
+        <button id="closeBtn">好哒～</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="loveLetter">
+    <div class="modal love-letter">
+      <div class="emoji">💌</div>
+      <h2>偷偷告诉你～</h2>
+      <p style="font-size:15px; line-height:2; text-align:left; margin: 12px 0 20px;">
+        亲爱的宝贝：<br>
+        其实这个转盘上的每一个奖品<br>
+        在我心里你都已经拥有了 💖<br>
+        无论中没中奖，你都是我最大的幸运。<br>
+        <span style="float:right; margin-top:8px;">—— 永远爱你的我</span>
+      </p>
+      <button id="closeLetterBtn">嘻嘻～收到 💕</button>
     </div>
   </div>
 
@@ -504,6 +560,81 @@
       msg: '虽然没中奖，但是抱抱你！明天再来一次嘛 💖 反正我永远是你的奖品 😎',
     },
   };
+
+  // ===== 副标题随机甜话 =====
+  const SWEET_PHRASES = [
+    '献给我最爱的小可爱 💖 每天一次哟～',
+    '宝贝今天也要开开心心 🌸',
+    '没中奖也别哭，老公给你买 🥺',
+    '运气小骰子，转给你的好心情 🎲',
+    '今天的宝贝，比奶茶还甜 🧋💗',
+    '你笑起来真好看，像春天的花一样 🌷',
+    '不管转到啥，我都是你的中奖号 😘',
+    '转盘转转转，幸运找小仙 🧚‍♀️',
+    '陪你吃喝玩乐的小卡车，已发车 🚚💨',
+    '宝贝一笑，全世界都亮了 ✨',
+  ];
+  document.getElementById('subtitle').textContent =
+    SWEET_PHRASES[Math.floor(Math.random() * SWEET_PHRASES.length)];
+
+  // ===== 鼠标轨迹爱心 =====
+  const TRAIL_ICONS = ['💖','💗','💕','✨','🌟','🌸'];
+  let lastTrail = 0, lastX = 0, lastY = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    if (now - lastTrail < 90) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    if (dx*dx + dy*dy < 25) return; // 鼠标几乎不动就不画
+    lastTrail = now;
+    lastX = e.clientX; lastY = e.clientY;
+    const t = document.createElement('div');
+    t.className = 'trail';
+    t.textContent = TRAIL_ICONS[Math.floor(Math.random() * TRAIL_ICONS.length)];
+    t.style.left = e.clientX + 'px';
+    t.style.top = e.clientY + 'px';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 1400);
+  }, { passive: true });
+
+  // ===== Konami 彩蛋：键盘输入 iloveyou =====
+  const SECRET = 'iloveyou';
+  let typed = '';
+  document.addEventListener('keydown', (e) => {
+    if (!/^[a-zA-Z]$/.test(e.key)) return;
+    typed = (typed + e.key.toLowerCase()).slice(-SECRET.length);
+    if (typed === SECRET) {
+      typed = '';
+      triggerLoveBoom();
+    }
+  });
+  function triggerLoveBoom() {
+    const icons = ['💖','💗','💕','💞','💝','❤️','🌹','✨','🌟'];
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    for (let i = 0; i < 80; i++) {
+      const b = document.createElement('div');
+      b.className = 'boom';
+      b.textContent = icons[Math.floor(Math.random() * icons.length)];
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 200 + Math.random() * 400;
+      b.style.left = cx + 'px';
+      b.style.top = cy + 'px';
+      b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      b.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+      b.style.animationDelay = (Math.random() * 0.3) + 's';
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 3000);
+    }
+    playWin();
+    setTimeout(() => {
+      document.getElementById('loveLetter').classList.add('show');
+    }, 1200);
+  }
+  document.getElementById('closeLetterBtn').addEventListener('click', () => {
+    document.getElementById('loveLetter').classList.remove('show');
+  });
+  document.getElementById('loveLetter').addEventListener('click', (e) => {
+    if (e.target.id === 'loveLetter') e.currentTarget.classList.remove('show');
+  });
 
   // ===== 初始化背景星星 =====
   const stars = document.getElementById('stars');
@@ -598,6 +729,7 @@
   const remainingEl = document.getElementById('remaining');
   const todayResultEl = document.getElementById('todayResult');
   const todayPrizeEl = document.getElementById('todayPrize');
+  const hugBtn = document.getElementById('hugBtn');
   const modal = document.getElementById('modal');
   const closeBtn = document.getElementById('closeBtn');
   const resultEmoji = document.getElementById('resultEmoji');
@@ -833,12 +965,38 @@
     resultMsg.textContent = already
       ? `今天已经抽过啦，结果是「${cfg.prize}」。明天再来玩吧～ 💕`
       : cfg.msg;
+    hugBtn.style.display = (type === 'none') ? '' : 'none';
     modal.classList.add('show');
     if (!already) {
       if (type === 'none') playLose();
       else { playWin(); confettiBoom(); }
     }
   }
+
+  hugBtn.addEventListener('click', () => {
+    // 在弹窗附近喷一波爱心
+    const rect = hugBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const icons = ['🤗','💖','💗','🥰','💕','✨'];
+    for (let i = 0; i < 30; i++) {
+      const b = document.createElement('div');
+      b.className = 'boom';
+      b.textContent = icons[Math.floor(Math.random() * icons.length)];
+      const ang = -Math.PI/2 + (Math.random() - 0.5) * Math.PI; // 向上扇形扩散
+      const dist = 80 + Math.random() * 180;
+      b.style.left = cx + 'px';
+      b.style.top = cy + 'px';
+      b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      b.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+      b.style.animationDelay = (Math.random() * 0.2) + 's';
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 2400);
+    }
+    playWin();
+    hugBtn.textContent = '抱住啦 🥰';
+    setTimeout(() => { hugBtn.textContent = '🥺 再抱抱'; }, 1500);
+  });
 
   function confettiBoom() {
     const colors = ['#ffd86b', '#ff6fa8', '#c19bff', '#5ec8ff', '#a3e635', '#fff'];
