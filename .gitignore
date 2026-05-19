@@ -1,0 +1,5 @@
+.git-credentials
+.token
+.env
+*.local
+.DS_Store
