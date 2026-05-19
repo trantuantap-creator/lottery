@@ -347,6 +347,78 @@
     color: #6e2a55 !important;
   }
 
+  /* 二级菜单（奶茶/烧烤/蛋糕） */
+  .sub-menu {
+    margin: 4px 0 8px;
+    padding: 12px;
+    background: rgba(255, 230, 243, 0.4);
+    border-radius: 12px;
+    border: 1px dashed #f0a8c8;
+  }
+  .menu-title {
+    font-size: 13px !important;
+    color: #c0247c !important;
+    margin-bottom: 10px !important;
+    font-weight: 600;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1.5px solid #ffb8d6;
+    color: #c0247c;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .chip:active { transform: scale(0.92); }
+  .chip.selected {
+    background: linear-gradient(135deg, #ff6fa8, #c0247c);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(192, 36, 124, 0.3);
+  }
+  .chip-saved {
+    text-align: center;
+    color: #c0247c;
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .chip-input-wrap {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+  .chip-input-wrap input {
+    flex: 1;
+    max-width: 180px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1.5px solid #ffb8d6;
+    background: #fff;
+    font-size: 13px;
+    color: #6e2a55;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .chip-input-wrap input:focus { border-color: #ff6fa8; }
+  .chip-input-wrap button {
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    letter-spacing: 0 !important;
+    background: linear-gradient(135deg, #ffd86b, #ff8a4a) !important;
+    box-shadow: 0 4px 10px rgba(255, 138, 74, 0.3) !important;
+  }
+
   /* 鼠标轨迹爱心 */
   .trail {
     position: fixed;
@@ -413,6 +485,80 @@
   .mute-btn:hover { background: rgba(255,255,255,0.2); }
   .mute-btn:active { transform: scale(0.9); }
 
+  .music-btn {
+    position: fixed;
+    top: 18px;
+    right: 72px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.2s, opacity 0.2s;
+    opacity: 0.6;
+  }
+  .music-btn.on { opacity: 1; background: rgba(255,200,80,0.25); }
+  .music-btn:hover { background: rgba(255,255,255,0.2); }
+  .music-btn:active { transform: scale(0.9); }
+
+  .shake-hint {
+    position: fixed;
+    top: 72px;
+    right: 18px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 12px;
+    z-index: 50;
+    animation: hintFade 4s ease-in-out 2s forwards;
+    opacity: 1;
+  }
+  @keyframes hintFade {
+    0% { opacity: 1; }
+    100% { opacity: 0; visibility: hidden; }
+  }
+
+  /* 3-2-1 倒计时 */
+  .countdown {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+  }
+  .countdown.show { display: flex; }
+  .countdown span {
+    font-size: clamp(120px, 30vw, 200px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffd86b, #ff6fa8, #c19bff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 40px rgba(255, 200, 80, 0.8));
+    animation: cdPop 1s ease-in-out;
+  }
+  @keyframes cdPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    40%  { transform: scale(1.2); opacity: 1; }
+    70%  { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.7); opacity: 0; }
+  }
+
   footer {
     margin-top: 24px;
     font-size: 12px;
@@ -430,7 +576,10 @@
 <body>
   <div class="stars" id="stars"></div>
 
-  <button class="mute-btn" id="muteBtn" title="静音切换">🔊</button>
+  <button class="mute-btn" id="muteBtn" title="音效开关">🔊</button>
+  <button class="music-btn" id="musicBtn" title="背景音乐">🎵</button>
+  <div class="shake-hint" id="shakeHint" style="display:none">📱 摇一摇也能抽奖哟～</div>
+  <div class="countdown" id="countdown"><span id="cdNum">3</span></div>
 
   <header>
     <h1>✨ 宝贝の幸运大转盘 ✨</h1>
@@ -470,14 +619,14 @@
   <div class="prize-list">
     <h3>🎁 奖品池 🎁</h3>
     <ul>
-      <li>🧋 一杯奶茶（任你选）</li>
-      <li>🍢 烧烤大餐一顿</li>
+      <li>🧋 一杯奶茶</li>
+      <li>🍢 烧烤大餐</li>
       <li>🎂 一个小蛋糕</li>
-      <li>📱 iPhone 一台</li>
-      <li>👜 香奈儿包包</li>
-      <li>💍 钻石戒指一枚</li>
-      <li>🏎️ 法拉利一辆</li>
-      <li>✈️ 海南双人游</li>
+      <li>🍿 看一场电影</li>
+      <li>🌹 一束玫瑰花</li>
+      <li>💄 一支口红</li>
+      <li>🛍️ 陪你逛一天街</li>
+      <li>🥩 一顿牛排</li>
       <li>😢 谢谢惠顾</li>
     </ul>
   </div>
@@ -492,7 +641,23 @@
       <h2 id="resultTitle">恭喜中奖！</h2>
       <div class="prize-name" id="resultPrize">奶茶</div>
       <p id="resultMsg">宝贝运气真好～ 这杯奶茶我请！</p>
-      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+
+      <div class="sub-menu" id="milkteaMenu" style="display:none">
+        <p class="menu-title">想喝哪家的？(选一个告诉小宝)</p>
+        <div class="chips" id="milkteaChips"></div>
+      </div>
+
+      <div class="sub-menu" id="bbqMenu" style="display:none">
+        <p class="menu-title">想吃啥？(可多选)</p>
+        <div class="chips chips-multi" id="bbqChips"></div>
+      </div>
+
+      <div class="sub-menu" id="cakeMenu" style="display:none">
+        <p class="menu-title">想要什么口味？(选一个)</p>
+        <div class="chips" id="cakeChips"></div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
         <button id="hugBtn" class="hug-btn" style="display:none">🥺 再抱抱</button>
         <button id="closeBtn">好哒～</button>
       </div>
@@ -502,14 +667,8 @@
   <div class="modal-mask" id="loveLetter">
     <div class="modal love-letter">
       <div class="emoji">💌</div>
-      <h2>偷偷告诉你～</h2>
-      <p style="font-size:15px; line-height:2; text-align:left; margin: 12px 0 20px;">
-        亲爱的宝贝：<br>
-        其实这个转盘上的每一个奖品<br>
-        在我心里你都已经拥有了 💖<br>
-        无论中没中奖，你都是我最大的幸运。<br>
-        <span style="float:right; margin-top:8px;">—— 永远爱你的我</span>
-      </p>
+      <h2 id="letterTitle">偷偷告诉你～</h2>
+      <p id="letterBody" style="font-size:15px; line-height:2; text-align:left; margin: 12px 0 20px;"></p>
       <button id="closeLetterBtn">嘻嘻～收到 💕</button>
     </div>
   </div>
@@ -523,12 +682,12 @@
   // winnable 表示是否会真的被抽到
   const SECTORS = [
     { name: '奶茶',     emoji: '🧋', color: '#ff8ac0', winnable: true,  type: 'milktea' },
-    { name: 'iPhone',  emoji: '📱', color: '#5ec8ff', winnable: false, type: 'fake' },
+    { name: '看电影',   emoji: '🍿', color: '#5ec8ff', winnable: false, type: 'fake' },
     { name: '谢谢惠顾', emoji: '😢', color: '#c19bff', winnable: true,  type: 'none' },
-    { name: '香奈儿',   emoji: '👜', color: '#ffb84a', winnable: false, type: 'fake' },
+    { name: '一束花',   emoji: '🌹', color: '#ffb84a', winnable: false, type: 'fake' },
     { name: '烧烤',     emoji: '🍢', color: '#ff6fa8', winnable: true,  type: 'bbq' },
     { name: '小蛋糕',   emoji: '🎂', color: '#ffe17a', winnable: true,  type: 'cake' },
-    { name: '钻戒',     emoji: '💍', color: '#7dd3fc', winnable: false, type: 'fake' },
+    { name: '口红',     emoji: '💄', color: '#7dd3fc', winnable: false, type: 'fake' },
     { name: '谢谢惠顾', emoji: '😢', color: '#f472b6', winnable: true,  type: 'none' },
   ];
 
@@ -573,7 +732,7 @@
   const SWEET_PHRASES = [
     '献给我最爱的小可爱 💖 每天一次哟～',
     '宝贝今天也要开开心心 🌸',
-    '没中奖也别哭，老公给你买 🥺',
+    '没中奖也别哭，小宝给你买 🥺',
     '运气小骰子，转给你的好心情 🎲',
     '今天的宝贝，比奶茶还甜 🧋💗',
     '你笑起来真好看，像春天的花一样 🌷',
@@ -615,6 +774,83 @@
       triggerLoveBoom();
     }
   });
+  // ===== 情书库 =====
+  const LOVE_LETTERS = [
+    {
+      title: '偷偷告诉你～',
+      body: '亲爱的宝贝：<br>这个转盘上的每一个奖品，<br>在我心里你都已经拥有了 💖<br>无论中没中奖，<br>你都是我最大的幸运。<br><span style="float:right; margin-top:8px;">—— 永远爱你的我</span>',
+    },
+    {
+      title: '一句小情话 💭',
+      body: '你笑起来的样子，<br>是我私藏的壁纸 📸<br>每天看好多遍，都不腻。<br><span style="float:right; margin-top:8px;">—— 你的小迷弟</span>',
+    },
+    {
+      title: '想对你说 🥰',
+      body: '今天的你，一定要开开心心，<br>不开心也不准。<br>有事我顶着，<br>有委屈我抱着。<br><span style="float:right; margin-top:8px;">—— 你的小护盾 🛡</span>',
+    },
+    {
+      title: '小心机告白 💘',
+      body: '别人都说我变温柔了，<br>其实只有遇到你的时候才是。<br>剩下时间……还是那个臭脾气 😏<br><span style="float:right; margin-top:8px;">—— 只对你温柔</span>',
+    },
+    {
+      title: '一个秘密 🤫',
+      body: '我手机里有一个相册，<br>名字叫"宝贝"。<br>里面全是你的截图和偷拍。<br>嘘——别告诉别人 🤭<br><span style="float:right; margin-top:8px;">—— 你的小狗仔</span>',
+    },
+    {
+      title: '认真说一句 💍',
+      body: '认识你之后，<br>"以后"这两个字才有意义。<br>下辈子也想这样找到你。<br><span style="float:right; margin-top:8px;">—— 你的归宿</span>',
+    },
+    {
+      title: '给小可爱 🍓',
+      body: '你是我的小奶茶 🧋<br>是我的小蛋糕 🎂<br>是我的全世界 🌍<br>也是我每天起床的理由 ☀️<br><span style="float:right; margin-top:8px;">—— 离不开你的我</span>',
+    },
+  ];
+  let letterIdx = -1;
+  function showLetter(idx) {
+    // 不连续显示同一封
+    if (idx === undefined) {
+      do { idx = Math.floor(Math.random() * LOVE_LETTERS.length); }
+      while (idx === letterIdx && LOVE_LETTERS.length > 1);
+    }
+    letterIdx = idx;
+    const L = LOVE_LETTERS[idx];
+    document.getElementById('letterTitle').textContent = L.title;
+    document.getElementById('letterBody').innerHTML = L.body;
+    document.getElementById('loveLetter').classList.add('show');
+  }
+
+  // Logo 连点 5 次解锁情书
+  let logoTaps = 0, logoTapTimer = null;
+  document.querySelector('h1').addEventListener('click', () => {
+    logoTaps++;
+    clearTimeout(logoTapTimer);
+    logoTapTimer = setTimeout(() => { logoTaps = 0; }, 1200);
+    if (logoTaps >= 5) {
+      logoTaps = 0;
+      showLetter();
+      playWin();
+    }
+  });
+
+  // 长按 GO 按钮 1.2 秒也能解锁情书（仅未抽奖时）
+  let pressTimer = null;
+  function startPress() {
+    if (spinBtn.disabled) return;
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => {
+      pressTimer = 'fired';
+      showLetter();
+      playWin();
+    }, 1200);
+  }
+  function cancelPress() {
+    if (pressTimer === 'fired') { pressTimer = null; return true; } // 长按已触发，不要触发普通 click
+    clearTimeout(pressTimer);
+    pressTimer = null;
+    return false;
+  }
+  // 这两个在 DOM 就绪后绑定 spinBtn（见下方初始化）
+
   function triggerLoveBoom() {
     const icons = ['💖','💗','💕','💞','💝','❤️','🌹','✨','🌟'];
     const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
@@ -633,9 +869,7 @@
       setTimeout(() => b.remove(), 3000);
     }
     playWin();
-    setTimeout(() => {
-      document.getElementById('loveLetter').classList.add('show');
-    }, 1200);
+    setTimeout(() => showLetter(), 1200);
   }
   document.getElementById('closeLetterBtn').addEventListener('click', () => {
     document.getElementById('loveLetter').classList.remove('show');
@@ -739,6 +973,19 @@
   const todayPrizeEl = document.getElementById('todayPrize');
   const hugBtn = document.getElementById('hugBtn');
   const modal = document.getElementById('modal');
+  const countdownEl = document.getElementById('countdown');
+  const cdNumEl = document.getElementById('cdNum');
+  const milkteaMenu = document.getElementById('milkteaMenu');
+  const bbqMenu = document.getElementById('bbqMenu');
+  const cakeMenu = document.getElementById('cakeMenu');
+
+  // 长按按钮解锁情书 —— 绑定 spinBtn 事件
+  spinBtn.addEventListener('mousedown', startPress);
+  spinBtn.addEventListener('touchstart', startPress, { passive: true });
+  spinBtn.addEventListener('mouseup', cancelPress);
+  spinBtn.addEventListener('mouseleave', cancelPress);
+  spinBtn.addEventListener('touchend', cancelPress);
+  spinBtn.addEventListener('touchcancel', cancelPress);
   const closeBtn = document.getElementById('closeBtn');
   const resultEmoji = document.getElementById('resultEmoji');
   const resultTitle = document.getElementById('resultTitle');
@@ -830,6 +1077,126 @@
       osc.connect(gain).connect(ctx.destination);
       osc.start(t0); osc.stop(t0 + 0.5);
     });
+  }
+
+  // ===== 背景音乐：合成 4 和弦循环 =====
+  let bgGain = null, bgFilter = null, bgInterval = null, bgNextTime = 0, bgChordIdx = 0;
+  let musicOn = localStorage.getItem('lottery_music') === '1';
+  const musicBtn = document.getElementById('musicBtn');
+  if (musicOn) musicBtn.classList.add('on');
+  musicBtn.addEventListener('click', () => {
+    musicOn = !musicOn;
+    localStorage.setItem('lottery_music', musicOn ? '1' : '0');
+    musicBtn.classList.toggle('on', musicOn);
+    if (musicOn) startBgMusic(); else stopBgMusic();
+  });
+  function startBgMusic() {
+    const ctx = ensureAudio(); if (!ctx || bgGain) return;
+    bgGain = ctx.createGain();
+    bgGain.gain.value = 0;
+    bgGain.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 1.2);
+    bgFilter = ctx.createBiquadFilter();
+    bgFilter.type = 'lowpass';
+    bgFilter.frequency.value = 900;
+    bgFilter.Q.value = 0.7;
+    bgFilter.connect(bgGain).connect(ctx.destination);
+    const chords = [
+      [261.63, 329.63, 392.00],   // C
+      [220.00, 261.63, 329.63],   // Am
+      [174.61, 220.00, 261.63],   // F
+      [196.00, 246.94, 293.66],   // G
+    ];
+    bgNextTime = ctx.currentTime + 0.1;
+    bgChordIdx = 0;
+    const dur = 3.2;
+    function schedule() {
+      if (!bgGain) return;
+      const chord = chords[bgChordIdx % chords.length];
+      const t0 = bgNextTime;
+      chord.forEach((f, i) => {
+        // 主和弦音
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(0.6, t0 + 0.8);
+        g.gain.setValueAtTime(0.6, t0 + dur - 0.6);
+        g.gain.linearRampToValueAtTime(0, t0 + dur);
+        o.connect(g).connect(bgFilter);
+        o.start(t0); o.stop(t0 + dur + 0.1);
+        // 高八度铃声点缀
+        if (i === 2) {
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.type = 'triangle';
+          o2.frequency.value = f * 2;
+          g2.gain.setValueAtTime(0, t0 + 0.3);
+          g2.gain.linearRampToValueAtTime(0.15, t0 + 0.5);
+          g2.gain.exponentialRampToValueAtTime(0.001, t0 + 1.5);
+          o2.connect(g2).connect(bgFilter);
+          o2.start(t0 + 0.3); o2.stop(t0 + 1.6);
+        }
+      });
+      bgNextTime += dur - 0.15;
+      bgChordIdx++;
+    }
+    for (let i = 0; i < 4; i++) schedule();
+    bgInterval = setInterval(() => {
+      if (!bgGain) return;
+      if (bgNextTime - ctx.currentTime < 4) schedule();
+    }, 1000);
+  }
+  function stopBgMusic() {
+    if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
+    if (bgGain && audioCtx) {
+      bgGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+      setTimeout(() => {
+        try { bgGain.disconnect(); bgFilter.disconnect(); } catch (e) {}
+        bgGain = null; bgFilter = null;
+      }, 500);
+    }
+  }
+  // 首次用户交互后，若音乐开关是开的就自动开始（浏览器要求用户手势才能启动 audio）
+  function autoStartMusic() {
+    if (musicOn) startBgMusic();
+    document.removeEventListener('click', autoStartMusic);
+    document.removeEventListener('keydown', autoStartMusic);
+    document.removeEventListener('touchstart', autoStartMusic);
+  }
+  document.addEventListener('click', autoStartMusic);
+  document.addEventListener('keydown', autoStartMusic);
+  document.addEventListener('touchstart', autoStartMusic, { passive: true });
+
+  // ===== 摇一摇抽奖（移动端） =====
+  const SHAKE_THRESHOLD = 18;
+  let lastShakeT = 0;
+  function onMotion(e) {
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a) return;
+    const mag = Math.sqrt((a.x||0)**2 + (a.y||0)**2 + (a.z||0)**2);
+    if (mag > SHAKE_THRESHOLD && performance.now() - lastShakeT > 1500) {
+      lastShakeT = performance.now();
+      if (!spinning && !spinBtn.disabled) spin();
+    }
+  }
+  if (typeof DeviceMotionEvent !== 'undefined') {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      document.getElementById('shakeHint').style.display = '';
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // iOS 13+ 需要权限，第一次点击时申请
+        const requestOnce = () => {
+          DeviceMotionEvent.requestPermission().then(s => {
+            if (s === 'granted') window.addEventListener('devicemotion', onMotion);
+          }).catch(() => {});
+          document.removeEventListener('click', requestOnce);
+        };
+        document.addEventListener('click', requestOnce);
+      } else {
+        window.addEventListener('devicemotion', onMotion);
+      }
+    }
   }
 
   // 根据 wheel 实际 transform 矩阵实时触发滴答
@@ -937,6 +1304,33 @@
     spinBtn.disabled = true;
     spinBtn.textContent = '抽奖中';
 
+    // 3-2-1 倒计时
+    runCountdown(() => doSpin());
+  }
+
+  function runCountdown(onDone) {
+    countdownEl.classList.add('show');
+    let n = 3;
+    const tick = () => {
+      cdNumEl.textContent = n > 0 ? n : 'GO!';
+      cdNumEl.style.animation = 'none';
+      void cdNumEl.offsetWidth; // reflow
+      cdNumEl.style.animation = '';
+      playTick();
+      if (n === 0) {
+        setTimeout(() => {
+          countdownEl.classList.remove('show');
+          onDone();
+        }, 600);
+      } else {
+        n--;
+        setTimeout(tick, 1000);
+      }
+    };
+    tick();
+  }
+
+  function doSpin() {
     const type = drawType();
     const idx = pickSectorIndex(type);
     // 目标：让扇区 idx 的中心对准顶部指针（0 度向上）
@@ -974,11 +1368,123 @@
       ? `今天已经抽过啦，结果是「${cfg.prize}」。明天再来玩吧～ 💕`
       : cfg.msg;
     hugBtn.style.display = (type === 'none') ? '' : 'none';
+    // 二级菜单：奶茶/烧烤/蛋糕 才显示
+    milkteaMenu.style.display = (type === 'milktea') ? '' : 'none';
+    bbqMenu.style.display     = (type === 'bbq')     ? '' : 'none';
+    cakeMenu.style.display    = (type === 'cake')    ? '' : 'none';
+    if (type === 'milktea') renderMilktea();
+    if (type === 'bbq')     renderBbq();
+    if (type === 'cake')    renderCake();
     modal.classList.add('show');
     if (!already) {
       if (type === 'none') playLose();
       else { playWin(); confettiBoom(); }
     }
+  }
+
+  // ===== 二级选项 chips =====
+  const MILKTEA_OPTIONS = ['喜茶','奈雪','一点点','蜜雪','CoCo','茶颜悦色','古茗','沪上阿姨','霸王茶姬'];
+  const BBQ_OPTIONS     = ['🍗 烤翅','🥩 五花肉','🌶 辣翅','🍖 烤肉串','🥬 韭菜','🍄 金针菇','🥔 烤土豆','🌽 玉米','🥖 烤馒头','🦐 烤虾','🫒 毛豆','🦪 生蚝'];
+  const CAKE_OPTIONS    = ['🍓 草莓','🍫 巧克力','🧀 芝士','🍵 抹茶','🍑 水蜜桃','🥭 芒果','🥥 椰子','🍮 焦糖','🍌 香蕉'];
+
+  // 单选 chip 渲染（奶茶/蛋糕）
+  function renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey) {
+    const wrap = document.getElementById(wrapId);
+    const customs = JSON.parse(localStorage.getItem(customKey) || '[]');
+    const saved = JSON.parse(localStorage.getItem(savedKey) || 'null');
+    const all = defaults.concat(customs);
+    wrap.innerHTML =
+      all.map(o => `<span class="chip ${saved === o ? 'selected' : ''}" data-v="${o}">${o}</span>`).join('') +
+      `<div class="chip-input-wrap">
+         <input type="text" placeholder="想要别的？打字..." maxlength="20"/>
+         <button>添加</button>
+       </div>
+       <div class="chip-saved">${saved ? `已记下：${saved} ${savedSuffix}` : ''}</div>`;
+    const savedEl = wrap.querySelector('.chip-saved');
+    const select = (v, alreadyChipEl) => {
+      localStorage.setItem(savedKey, JSON.stringify(v));
+      wrap.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
+      if (alreadyChipEl) alreadyChipEl.classList.add('selected');
+      savedEl.textContent = `已记下：${v} ${savedSuffix}`;
+      playTick();
+    };
+    wrap.querySelectorAll('.chip').forEach(c => {
+      c.addEventListener('click', () => select(c.dataset.v, c));
+    });
+    const input = wrap.querySelector('input');
+    const addBtn = wrap.querySelector('button');
+    const addCustom = () => {
+      const v = input.value.trim();
+      if (!v) return;
+      // 已存在就直接选
+      const existing = Array.from(wrap.querySelectorAll('.chip')).find(c => c.dataset.v === v);
+      if (existing) { select(v, existing); input.value = ''; return; }
+      // 保存到自定义列表
+      const next = customs.concat(v);
+      localStorage.setItem(customKey, JSON.stringify(next));
+      input.value = '';
+      // 重新渲染（保留选中 v）
+      localStorage.setItem(savedKey, JSON.stringify(v));
+      renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey);
+    };
+    addBtn.addEventListener('click', addCustom);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
+  }
+  function renderMilktea() {
+    renderSingle('milkteaChips', 'pick_milktea', MILKTEA_OPTIONS, '✅ 小宝已收到～', 'custom_milktea');
+  }
+  function renderCake() {
+    renderSingle('cakeChips', 'pick_cake', CAKE_OPTIONS, '✅ 小宝已收到～', 'custom_cake');
+  }
+  // 多选 chip 渲染（烧烤）
+  function renderBbq() {
+    const wrap = document.getElementById('bbqChips');
+    const customs = JSON.parse(localStorage.getItem('custom_bbq') || '[]');
+    const saved = JSON.parse(localStorage.getItem('pick_bbq') || '[]');
+    const set = new Set(saved);
+    const all = BBQ_OPTIONS.concat(customs);
+    wrap.innerHTML =
+      all.map(o => `<span class="chip ${set.has(o) ? 'selected' : ''}" data-v="${o}">${o}</span>`).join('') +
+      `<div class="chip-input-wrap">
+         <input type="text" placeholder="想吃别的？打字..." maxlength="20"/>
+         <button>添加</button>
+       </div>
+       <div class="chip-saved">${saved.length ? `已记下 ${saved.length} 样 ✅` : ''}</div>`;
+    const savedEl = wrap.querySelector('.chip-saved');
+    const flush = () => {
+      const arr = Array.from(set);
+      localStorage.setItem('pick_bbq', JSON.stringify(arr));
+      savedEl.textContent = arr.length ? `已记下 ${arr.length} 样 ✅` : '';
+    };
+    wrap.querySelectorAll('.chip').forEach(c => {
+      c.addEventListener('click', () => {
+        const v = c.dataset.v;
+        if (set.has(v)) { set.delete(v); c.classList.remove('selected'); }
+        else { set.add(v); c.classList.add('selected'); }
+        flush();
+        playTick();
+      });
+    });
+    const input = wrap.querySelector('input');
+    const addBtn = wrap.querySelector('button');
+    const addCustom = () => {
+      const v = input.value.trim();
+      if (!v) return;
+      const existing = Array.from(wrap.querySelectorAll('.chip')).find(c => c.dataset.v === v);
+      if (existing) {
+        if (!set.has(v)) { set.add(v); existing.classList.add('selected'); flush(); }
+        input.value = '';
+        return;
+      }
+      const next = customs.concat(v);
+      localStorage.setItem('custom_bbq', JSON.stringify(next));
+      set.add(v);
+      localStorage.setItem('pick_bbq', JSON.stringify(Array.from(set)));
+      input.value = '';
+      renderBbq();
+    };
+    addBtn.addEventListener('click', addCustom);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
   }
 
   hugBtn.addEventListener('click', () => {
@@ -1021,7 +1527,11 @@
     }
   }
 
-  spinBtn.addEventListener('click', spin);
+  spinBtn.addEventListener('click', () => {
+    // 如果是长按触发的，跳过 click
+    if (cancelPress()) return;
+    spin();
+  });
   closeBtn.addEventListener('click', () => modal.classList.remove('show'));
   modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.classList.remove('show');
