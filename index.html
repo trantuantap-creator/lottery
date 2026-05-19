@@ -20,6 +20,101 @@
     position: relative;
   }
 
+  /* 极光雾团：3 块超大模糊彩云缓慢漂移 */
+  .nebula {
+    position: fixed;
+    inset: -10vh -10vw;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .nebula i {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .nebula i:nth-child(1) {
+    width: 65vw; height: 65vw;
+    top: -15vw; left: -15vw;
+    background: radial-gradient(circle, #ff6fa8 0%, rgba(255,111,168,0) 65%);
+    animation: nebDrift1 26s ease-in-out infinite;
+  }
+  .nebula i:nth-child(2) {
+    width: 55vw; height: 55vw;
+    bottom: -10vw; right: -10vw;
+    background: radial-gradient(circle, #6fc8ff 0%, rgba(111,200,255,0) 65%);
+    animation: nebDrift2 32s ease-in-out infinite;
+  }
+  .nebula i:nth-child(3) {
+    width: 50vw; height: 50vw;
+    top: 35%; left: 30%;
+    background: radial-gradient(circle, #ffc97a 0%, rgba(255,201,122,0) 65%);
+    animation: nebDrift3 38s ease-in-out infinite;
+  }
+  @keyframes nebDrift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(18vw, 14vh) scale(1.15); }
+  }
+  @keyframes nebDrift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-14vw, -18vh) scale(1.12); }
+  }
+  @keyframes nebDrift3 {
+    0%, 100% { transform: translate(0, 0) scale(0.92); }
+    50%      { transform: translate(-12vw, 12vh) scale(1.22); }
+  }
+
+  /* 地平线辉光：底部一层柔粉光晕 */
+  .horizon-glow {
+    position: fixed;
+    bottom: -28vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160vw;
+    height: 60vh;
+    background:
+      radial-gradient(ellipse at center,
+        rgba(255, 142, 200, 0.55) 0%,
+        rgba(255, 142, 200, 0.18) 30%,
+        rgba(255, 142, 200, 0)    62%);
+    filter: blur(25px);
+    pointer-events: none;
+    z-index: 0;
+    mix-blend-mode: screen;
+  }
+
+  /* 流星 */
+  .ss-wrap {
+    position: fixed;
+    top: 0;
+    left: -5vw;
+    z-index: 1;
+    pointer-events: none;
+    width: 0;
+    transform-origin: left center;
+  }
+  .ss {
+    width: 140px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.5) 55%,
+      #fff 100%);
+    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px #ffd1f2);
+    transform: translateX(-220px);
+    animation: ssMove 1.4s ease-out forwards;
+    will-change: transform, opacity;
+  }
+  @keyframes ssMove {
+    0%   { transform: translateX(-220px); opacity: 0; }
+    18%  { opacity: 1; }
+    100% { transform: translateX(120vw); opacity: 0; }
+  }
+
   /* 背景星星 */
   .stars {
     position: fixed;
@@ -659,6 +754,8 @@
 </style>
 </head>
 <body>
+  <div class="nebula" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="horizon-glow" aria-hidden="true"></div>
   <div class="stars" id="stars"></div>
 
   <button class="mute-btn" id="muteBtn" title="音效开关">🔊</button>
@@ -1014,6 +1111,28 @@
   }
   setInterval(spawnHeart, 800);
   for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 200);
+
+  // ===== 偶发流星 =====
+  function spawnShootingStar() {
+    const wrap = document.createElement('div');
+    wrap.className = 'ss-wrap';
+    wrap.style.top = (Math.random() * 45) + 'vh';
+    const angle = 14 + Math.random() * 16; // 14-30 度
+    wrap.style.transform = `rotate(${angle}deg)`;
+    const ss = document.createElement('div');
+    ss.className = 'ss';
+    ss.style.animationDuration = (1.1 + Math.random() * 0.6) + 's';
+    wrap.appendChild(ss);
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 2200);
+  }
+  function scheduleNextStar() {
+    setTimeout(() => {
+      spawnShootingStar();
+      scheduleNextStar();
+    }, 7000 + Math.random() * 9000);
+  }
+  setTimeout(scheduleNextStar, 3000);
 
   // ===== 绘制转盘 (SVG) =====
   const wheelEl = document.getElementById('wheel');
