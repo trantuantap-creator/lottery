@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>宝贝の幸运大转盘 ✨</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(ellipse at top, #ff7ab8 0%, #8a2be2 35%, #2b0050 75%, #0d0028 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px 16px 60px;
+    position: relative;
+  }
+
+  /* 背景星星 */
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle 4s infinite;
+    box-shadow: 0 0 8px #fff, 0 0 14px #ffd1f2;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.4); }
+  }
+
+  /* 飘浮爱心 */
+  .heart {
+    position: absolute;
+    color: #ff6fa8;
+    font-size: 22px;
+    animation: floatUp linear forwards;
+    text-shadow: 0 0 10px #ff6fa8;
+    user-select: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 18px;
+    z-index: 2;
+  }
+  h1 {
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #fff1a8, #ff8ec8, #c19bff, #fff1a8);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 4s linear infinite;
+    filter: drop-shadow(0 4px 18px rgba(255, 142, 200, 0.6));
+  }
+  @keyframes shine {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #ffd9ee;
+    opacity: 0.9;
+  }
+
+  /* 转盘容器 */
+  .wheel-wrapper {
+    position: relative;
+    width: min(92vw, 460px);
+    aspect-ratio: 1 / 1;
+    margin: 18px 0 26px;
+    z-index: 2;
+    filter: drop-shadow(0 18px 40px rgba(255, 100, 180, 0.45));
+  }
+  /* 外圈装饰光环 */
+  .wheel-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ffd86b, #ff5fa2, #b362ff, #5ec8ff, #ffd86b);
+    filter: blur(6px);
+    animation: spinHalo 10s linear infinite;
+    z-index: -1;
+  }
+  @keyframes spinHalo { to { transform: rotate(360deg); } }
+
+  .wheel-frame {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #fff7d6 0%, #ffd86b 40%, #c98a14 100%);
+    padding: 10px;
+    box-shadow:
+      inset 0 0 20px rgba(0,0,0,0.25),
+      0 0 30px rgba(255, 216, 107, 0.6);
+  }
+  .wheel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    transition: transform 6s cubic-bezier(0.17, 0.67, 0.16, 1);
+    transform: rotate(0deg);
+    overflow: hidden;
+    box-shadow:
+      inset 0 0 0 4px #fff8d8,
+      inset 0 0 0 6px #b97500;
+  }
+  .wheel svg { width: 100%; height: 100%; display: block; }
+  .wheel text {
+    font-family: -apple-system, "PingFang SC", sans-serif;
+    font-weight: 800;
+    fill: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+
+  /* 灯泡 */
+  .bulbs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .bulb {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #fffbe6;
+    box-shadow: 0 0 8px #fff, 0 0 14px #ffd86b;
+    top: 50%; left: 50%;
+    transform-origin: 0 0;
+    animation: bulbBlink 1s infinite;
+  }
+  @keyframes bulbBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* 指针 */
+  .pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 78px;
+    z-index: 5;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+  }
+  .pointer svg { width: 100%; height: 100%; }
+
+  /* 中心按钮 */
+  .spin-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: radial-gradient(circle at 30% 30%, #ffe17a, #ff6fa8 50%, #c0247c 100%);
+    color: #fff;
+    font-weight: 900;
+    font-size: clamp(16px, 3.6vw, 22px);
+    letter-spacing: 2px;
+    box-shadow:
+      0 0 0 4px #fff8d8,
+      0 0 0 6px #b97500,
+      0 10px 30px rgba(255, 100, 180, 0.7),
+      inset 0 -6px 12px rgba(0,0,0,0.2),
+      inset 0 4px 10px rgba(255,255,255,0.5);
+    transition: transform 0.15s;
+    z-index: 4;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    animation: pulse 1.6s infinite;
+  }
+  .spin-btn:active { transform: translate(-50%, -50%) scale(0.94); }
+  .spin-btn:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.6) brightness(0.7);
+    animation: none;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px #fff8d8, 0 0 0 6px #b97500, 0 10px 30px rgba(255, 100, 180, 0.7), inset 0 -6px 12px rgba(0,0,0,0.2), inset 0 4px 10px rgba(255,255,255,0.5); }
+    50%      { box-shadow: 0 0 0 4px #fff8d8, 0 0 0 6px #b97500, 0 0 50px rgba(255, 200, 80, 1), inset 0 -6px 12px rgba(0,0,0,0.2), inset 0 4px 10px rgba(255,255,255,0.5); }
+  }
+
+  /* 信息条 */
+  .info {
+    z-index: 2;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(8px);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: #fff;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .info b { color: #ffd86b; font-weight: 800; }
+  .info .sep { margin: 0 4px; opacity: 0.5; }
+  .today-result b { color: #ff8ec8; }
+
+  /* 奖品列表 */
+  .prize-list {
+    z-index: 2;
+    width: min(92vw, 460px);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-top: 8px;
+  }
+  .prize-list h3 {
+    font-size: 15px;
+    color: #ffd86b;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .prize-list ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .prize-list li {
+    font-size: 13px;
+    color: #ffe6f3;
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 弹窗 */
+  .modal-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-mask.show { display: flex; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: linear-gradient(160deg, #fff5fb, #ffe5f1);
+    color: #5a1740;
+    padding: 36px 28px 28px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4), inset 0 0 0 2px #ffd86b;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  @keyframes pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .modal .emoji {
+    font-size: 64px;
+    margin-bottom: 8px;
+    display: inline-block;
+    animation: bounce 1.2s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .modal h2 {
+    font-size: 26px;
+    margin-bottom: 8px;
+    color: #c0247c;
+    letter-spacing: 1px;
+  }
+  .modal p {
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+    color: #6e2a55;
+  }
+  .modal .prize-name {
+    font-size: 32px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #ff6fa8, #c0247c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 8px 0 16px;
+  }
+  .modal button {
+    background: linear-gradient(135deg, #ff6fa8, #c0247c);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(192, 36, 124, 0.4);
+    transition: transform 0.15s;
+  }
+  .modal button:active { transform: scale(0.95); }
+
+  /* 彩带 */
+  .confetti {
+    position: fixed;
+    top: -10px;
+    width: 10px; height: 16px;
+    z-index: 99;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* 静音按钮 */
+  .mute-btn {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .mute-btn:hover { background: rgba(255,255,255,0.2); }
+  .mute-btn:active { transform: scale(0.9); }
+
+  footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    z-index: 2;
+  }
+  footer .love { color: #ff6fa8; animation: beat 1s infinite; display: inline-block; }
+  @keyframes beat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <button class="mute-btn" id="muteBtn" title="静音切换">🔊</button>
+
+  <header>
+    <h1>✨ 宝贝の幸运大转盘 ✨</h1>
+    <div class="subtitle">献给我最爱的小可爱 💖 每天一次哟～</div>
+  </header>
+
+  <div class="info">
+    <span>剩余次数：<b id="remaining">1</b></span>
+    <span id="todayResult" class="today-result" style="display:none">
+      <span class="sep">·</span>
+      <span>今日抽到：<b id="todayPrize"></b></span>
+    </span>
+  </div>
+
+  <div class="wheel-wrapper">
+    <div class="pointer">
+      <svg viewBox="0 0 56 78">
+        <defs>
+          <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff5b1"/>
+            <stop offset="0.5" stop-color="#ffb84a"/>
+            <stop offset="1" stop-color="#b97500"/>
+          </linearGradient>
+        </defs>
+        <path d="M28 78 L4 14 Q28 -8 52 14 Z" fill="url(#pg)" stroke="#b97500" stroke-width="2"/>
+        <circle cx="28" cy="22" r="6" fill="#fff5b1" stroke="#b97500" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <div class="wheel-frame">
+      <div class="wheel" id="wheel"></div>
+      <div class="bulbs" id="bulbs"></div>
+      <button class="spin-btn" id="spinBtn">GO!</button>
+    </div>
+  </div>
+
+  <div class="prize-list">
+    <h3>🎁 奖品池 🎁</h3>
+    <ul>
+      <li>🧋 一杯奶茶（任你选）</li>
+      <li>🍢 烧烤大餐一顿</li>
+      <li>📱 iPhone 一台</li>
+      <li>👜 香奈儿包包</li>
+      <li>💍 钻石戒指一枚</li>
+      <li>🏎️ 法拉利一辆</li>
+      <li>✈️ 海南双人游</li>
+      <li>😢 谢谢惠顾</li>
+    </ul>
+  </div>
+
+  <footer>
+    Made with <span class="love">❤</span> for my baby
+  </footer>
+
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <div class="emoji" id="resultEmoji">🎉</div>
+      <h2 id="resultTitle">恭喜中奖！</h2>
+      <div class="prize-name" id="resultPrize">奶茶</div>
+      <p id="resultMsg">宝贝运气真好～ 这杯奶茶我请！</p>
+      <button id="closeBtn">好哒～</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== 配置 =====
+  // 转盘上显示的所有扇区（顺时针，从正上方第一个开始）
+  // winnable 表示是否会真的被抽到
+  const SECTORS = [
+    { name: '奶茶',     emoji: '🧋', color: '#ff8ac0', winnable: true,  type: 'milktea' },
+    { name: 'iPhone',  emoji: '📱', color: '#5ec8ff', winnable: false, type: 'fake' },
+    { name: '谢谢惠顾', emoji: '😢', color: '#c19bff', winnable: true,  type: 'none' },
+    { name: '香奈儿',   emoji: '👜', color: '#ffb84a', winnable: false, type: 'fake' },
+    { name: '烧烤',     emoji: '🍢', color: '#ff6fa8', winnable: true,  type: 'bbq' },
+    { name: '谢谢惠顾', emoji: '😢', color: '#a3e635', winnable: true,  type: 'none' },
+    { name: '钻戒',     emoji: '💍', color: '#7dd3fc', winnable: false, type: 'fake' },
+    { name: '谢谢惠顾', emoji: '😢', color: '#f472b6', winnable: true,  type: 'none' },
+  ];
+
+  // 抽奖概率：20% 奶茶 / 5% 烧烤 / 75% 谢谢惠顾
+  function drawType() {
+    const r = Math.random() * 100;
+    if (r < 20) return 'milktea';
+    if (r < 25) return 'bbq';
+    return 'none';
+  }
+
+  // 中奖文案
+  const RESULT_TEXTS = {
+    milktea: {
+      emoji: '🧋',
+      title: '恭喜中奖！',
+      prize: '一杯奶茶',
+      msg: '宝贝运气爆棚～ 这杯奶茶我请！想喝什么直接告诉我，立刻安排～',
+    },
+    bbq: {
+      emoji: '🍢',
+      title: '欧气满满！',
+      prize: '烧烤大餐',
+      msg: '哇哦！中了大奖！今晚带你撸串去 🍻 想吃啥点啥～',
+    },
+    none: {
+      emoji: '😢',
+      title: '谢谢惠顾',
+      prize: '差一点点～',
+      msg: '虽然没中奖，但是抱抱你！明天再来一次嘛 💖 反正我永远是你的奖品 😎',
+    },
+  };
+
+  // ===== 初始化背景星星 =====
+  const stars = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = Math.random() * 4 + 's';
+    s.style.animationDuration = (3 + Math.random() * 4) + 's';
+    stars.appendChild(s);
+  }
+  // 飘浮爱心
+  function spawnHeart() {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = ['💖','💗','💝','💕','💞','❤️','✨','🌸'][Math.floor(Math.random()*8)];
+    h.style.left = Math.random() * 100 + '%';
+    h.style.fontSize = (16 + Math.random() * 18) + 'px';
+    h.style.animationDuration = (8 + Math.random() * 6) + 's';
+    stars.appendChild(h);
+    setTimeout(() => h.remove(), 14000);
+  }
+  setInterval(spawnHeart, 800);
+  for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 200);
+
+  // ===== 绘制转盘 (SVG) =====
+  const wheelEl = document.getElementById('wheel');
+  const N = SECTORS.length;
+  const anglePer = 360 / N;
+  const cx = 200, cy = 200, r = 200;
+
+  function polar(angleDeg, radius) {
+    const a = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + radius * Math.cos(a), y: cy + radius * Math.sin(a) };
+  }
+
+  let svg = `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">`;
+  // 扇区
+  for (let i = 0; i < N; i++) {
+    const startA = i * anglePer - anglePer / 2;
+    const endA = startA + anglePer;
+    const p1 = polar(startA, r);
+    const p2 = polar(endA, r);
+    const largeArc = anglePer > 180 ? 1 : 0;
+    const path = `M ${cx} ${cy} L ${p1.x} ${p1.y} A ${r} ${r} 0 ${largeArc} 1 ${p2.x} ${p2.y} Z`;
+    svg += `<path d="${path}" fill="${SECTORS[i].color}" stroke="#fff8d8" stroke-width="2"/>`;
+  }
+  // 分隔线高光
+  for (let i = 0; i < N; i++) {
+    const a = i * anglePer - anglePer / 2;
+    const p = polar(a, r);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
+  }
+  // 文字+图标
+  for (let i = 0; i < N; i++) {
+    const a = i * anglePer; // 扇区中心角度
+    const tp = polar(a, r * 0.62);
+    const ep = polar(a, r * 0.82);
+    svg += `<g transform="rotate(${a} ${tp.x} ${tp.y})">
+              <text x="${tp.x}" y="${tp.y}" font-size="20" text-anchor="middle" dominant-baseline="middle">${SECTORS[i].name}</text>
+            </g>`;
+    svg += `<g transform="rotate(${a} ${ep.x} ${ep.y})">
+              <text x="${ep.x}" y="${ep.y}" font-size="32" text-anchor="middle" dominant-baseline="middle">${SECTORS[i].emoji}</text>
+            </g>`;
+  }
+  // 中心装饰圈
+  svg += `<circle cx="${cx}" cy="${cy}" r="50" fill="rgba(255,255,255,0.15)" stroke="#fff8d8" stroke-width="2"/>`;
+  svg += `</svg>`;
+  wheelEl.innerHTML = svg;
+
+  // ===== 灯泡 =====
+  const bulbs = document.getElementById('bulbs');
+  const bulbCount = 24;
+  for (let i = 0; i < bulbCount; i++) {
+    const ang = (360 / bulbCount) * i;
+    const b = document.createElement('div');
+    b.className = 'bulb';
+    b.style.transform = `rotate(${ang}deg) translate(calc(50% - 6px - 10px)) rotate(-${ang}deg)`;
+    // 上面这种 transform-origin 0 0 的写法在 mobile 上容易乱，改用直接定位
+    b.style.transform = '';
+    b.style.left = `calc(50% + ${Math.cos((ang - 90) * Math.PI/180) * 48}% )`;
+    b.style.top  = `calc(50% + ${Math.sin((ang - 90) * Math.PI/180) * 48}% )`;
+    b.style.marginLeft = '-5px';
+    b.style.marginTop  = '-5px';
+    b.style.animationDelay = (i * 0.08) + 's';
+    bulbs.appendChild(b);
+  }
+
+  // ===== 抽奖逻辑 =====
+  const spinBtn = document.getElementById('spinBtn');
+  const remainingEl = document.getElementById('remaining');
+  const todayResultEl = document.getElementById('todayResult');
+  const todayPrizeEl = document.getElementById('todayPrize');
+  const modal = document.getElementById('modal');
+  const closeBtn = document.getElementById('closeBtn');
+  const resultEmoji = document.getElementById('resultEmoji');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultPrize = document.getElementById('resultPrize');
+  const resultMsg = document.getElementById('resultMsg');
+
+  let currentRotation = 0;
+  let spinning = false;
+  let userIp = null;
+  let storageKey = null;
+
+  // ===== 音效 (Web Audio API 合成) =====
+  let audioCtx = null;
+  let muted = localStorage.getItem('lottery_muted') === '1';
+  const muteBtn = document.getElementById('muteBtn');
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    localStorage.setItem('lottery_muted', muted ? '1' : '0');
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    if (!muted) ensureAudio();
+  });
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playTick() {
+    if (muted) return;
+    const ctx = ensureAudio(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1500, t);
+    osc.frequency.exponentialRampToValueAtTime(800, t + 0.04);
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t); osc.stop(t + 0.06);
+  }
+  function playWin() {
+    if (muted) return;
+    const ctx = ensureAudio(); if (!ctx) return;
+    // 上扬琶音：C E G C 高八度
+    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+    notes.forEach((freq, i) => {
+      const t0 = ctx.currentTime + i * 0.1;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.18, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0); osc.stop(t0 + 0.45);
+    });
+    // 同时来一组水晶音
+    [1568, 2093].forEach((freq, i) => {
+      const t0 = ctx.currentTime + 0.5 + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.12, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.6);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0); osc.stop(t0 + 0.7);
+    });
+  }
+  function playLose() {
+    if (muted) return;
+    const ctx = ensureAudio(); if (!ctx) return;
+    // 下行三音：失落小号
+    const notes = [392, 349.23, 293.66];
+    notes.forEach((freq, i) => {
+      const t0 = ctx.currentTime + i * 0.2;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.1, t0 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0); osc.stop(t0 + 0.5);
+    });
+  }
+
+  // 根据 wheel 实际 transform 矩阵实时触发滴答
+  function startTickLoop(durationMs) {
+    if (muted) return;
+    const startTime = performance.now();
+    let lastIdx = -999;
+    function frame() {
+      const elapsed = performance.now() - startTime;
+      if (elapsed > durationMs + 80) return;
+      const m = getComputedStyle(wheelEl).transform;
+      let angle = 0;
+      if (m && m.startsWith('matrix')) {
+        const v = m.match(/matrix\(([^)]+)\)/);
+        if (v) {
+          const p = v[1].split(',').map(parseFloat);
+          angle = Math.atan2(p[1], p[0]) * 180 / Math.PI;
+        }
+      }
+      const norm = ((angle % 360) + 360) % 360;
+      const idx = Math.floor(norm / anglePer);
+      if (idx !== lastIdx) {
+        lastIdx = idx;
+        playTick();
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // 今日日期 key
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  }
+
+  // 获取 IP
+  async function fetchIp() {
+    const apis = [
+      'https://api.ipify.org?format=json',
+      'https://ipapi.co/json/',
+      'https://api64.ipify.org?format=json',
+    ];
+    for (const api of apis) {
+      try {
+        const r = await fetch(api, { cache: 'no-store' });
+        if (!r.ok) continue;
+        const j = await r.json();
+        if (j.ip) return j.ip;
+      } catch (e) { /* try next */ }
+    }
+    return 'unknown';
+  }
+
+  function getRecord() {
+    try { return JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch (e) { return null; }
+  }
+  function saveRecord(type) {
+    localStorage.setItem(storageKey, JSON.stringify({
+      type, date: todayKey(), at: Date.now()
+    }));
+  }
+
+  async function init() {
+    spinBtn.disabled = true;
+    spinBtn.textContent = '...';
+    userIp = await fetchIp();
+    storageKey = `lottery_${userIp}_${todayKey()}`;
+    const rec = getRecord();
+    if (rec && rec.date === todayKey()) {
+      remainingEl.textContent = '0';
+      spinBtn.disabled = true;
+      spinBtn.textContent = '明天再来';
+      showTodayBadge(rec.type);
+      // 直接展示已抽结果
+      setTimeout(() => showResult(rec.type, true), 400);
+    } else {
+      remainingEl.textContent = '1';
+      spinBtn.disabled = false;
+      spinBtn.textContent = 'GO!';
+    }
+  }
+
+  function showTodayBadge(type) {
+    const cfg = RESULT_TEXTS[type] || RESULT_TEXTS.none;
+    todayPrizeEl.textContent = cfg.emoji + ' ' + cfg.prize;
+    todayResultEl.style.display = '';
+  }
+
+  // 根据中奖类型找到一个对应的可中奖扇区索引
+  function pickSectorIndex(type) {
+    const candidates = [];
+    SECTORS.forEach((s, i) => { if (s.winnable && s.type === type) candidates.push(i); });
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function spin() {
+    if (spinning) return;
+    const rec = getRecord();
+    if (rec && rec.date === todayKey()) {
+      showResult(rec.type, true);
+      return;
+    }
+    spinning = true;
+    spinBtn.disabled = true;
+    spinBtn.textContent = '抽奖中';
+
+    const type = drawType();
+    const idx = pickSectorIndex(type);
+    // 目标：让扇区 idx 的中心对准顶部指针（0 度向上）
+    // 当转盘旋转角 R 时，扇区中心实际角度 = idx*anglePer + R （顺时针）
+    // 想让它停在 0（顶部），即 R = -idx*anglePer + 360*k + 随机偏移
+    const targetSectorAngle = idx * anglePer;
+    const baseRounds = 6 + Math.floor(Math.random() * 3); // 6~8 圈
+    // 在扇区内随机偏移一点，避免每次都正中
+    const jitter = (Math.random() - 0.5) * (anglePer * 0.7);
+    const finalAngle = baseRounds * 360 - targetSectorAngle + jitter;
+
+    // 累计旋转，保证视觉上一直顺时针多圈
+    const next = currentRotation + (360 - (currentRotation % 360)) + finalAngle;
+    currentRotation = next;
+    wheelEl.style.transform = `rotate(${next}deg)`;
+    ensureAudio();
+    startTickLoop(6000);
+
+    setTimeout(() => {
+      saveRecord(type);
+      remainingEl.textContent = '0';
+      spinBtn.textContent = '明天再来';
+      showTodayBadge(type);
+      showResult(type, false);
+      spinning = false;
+    }, 6100);
+  }
+
+  function showResult(type, already) {
+    const cfg = RESULT_TEXTS[type] || RESULT_TEXTS.none;
+    resultEmoji.textContent = cfg.emoji;
+    resultTitle.textContent = already ? '今日已抽过哦～' : cfg.title;
+    resultPrize.textContent = cfg.prize;
+    resultMsg.textContent = already
+      ? `今天已经抽过啦，结果是「${cfg.prize}」。明天再来玩吧～ 💕`
+      : cfg.msg;
+    modal.classList.add('show');
+    if (!already) {
+      if (type === 'none') playLose();
+      else { playWin(); confettiBoom(); }
+    }
+  }
+
+  function confettiBoom() {
+    const colors = ['#ffd86b', '#ff6fa8', '#c19bff', '#5ec8ff', '#a3e635', '#fff'];
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      c.style.animationDelay = (Math.random() * 0.6) + 's';
+      c.style.transform = `rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+  }
+
+  spinBtn.addEventListener('click', spin);
+  closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('show');
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
