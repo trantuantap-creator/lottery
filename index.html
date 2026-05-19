@@ -472,6 +472,7 @@
     <ul>
       <li>🧋 一杯奶茶（任你选）</li>
       <li>🍢 烧烤大餐一顿</li>
+      <li>🎂 一个小蛋糕</li>
       <li>📱 iPhone 一台</li>
       <li>👜 香奈儿包包</li>
       <li>💍 钻石戒指一枚</li>
@@ -526,16 +527,17 @@
     { name: '谢谢惠顾', emoji: '😢', color: '#c19bff', winnable: true,  type: 'none' },
     { name: '香奈儿',   emoji: '👜', color: '#ffb84a', winnable: false, type: 'fake' },
     { name: '烧烤',     emoji: '🍢', color: '#ff6fa8', winnable: true,  type: 'bbq' },
-    { name: '谢谢惠顾', emoji: '😢', color: '#a3e635', winnable: true,  type: 'none' },
+    { name: '小蛋糕',   emoji: '🎂', color: '#ffe17a', winnable: true,  type: 'cake' },
     { name: '钻戒',     emoji: '💍', color: '#7dd3fc', winnable: false, type: 'fake' },
     { name: '谢谢惠顾', emoji: '😢', color: '#f472b6', winnable: true,  type: 'none' },
   ];
 
-  // 抽奖概率：20% 奶茶 / 5% 烧烤 / 75% 谢谢惠顾
+  // 抽奖概率：20% 奶茶 / 5% 烧烤 / 5% 蛋糕 / 70% 谢谢惠顾
   function drawType() {
     const r = Math.random() * 100;
     if (r < 20) return 'milktea';
     if (r < 25) return 'bbq';
+    if (r < 30) return 'cake';
     return 'none';
   }
 
@@ -552,6 +554,12 @@
       title: '欧气满满！',
       prize: '烧烤大餐',
       msg: '哇哦！中了大奖！今晚带你撸串去 🍻 想吃啥点啥～',
+    },
+    cake: {
+      emoji: '🎂',
+      title: '甜蜜大奖！',
+      prize: '一个小蛋糕',
+      msg: '哇～甜甜的小蛋糕到手 🍰 喜欢什么口味告诉我，明天给你买！',
     },
     none: {
       emoji: '😢',
