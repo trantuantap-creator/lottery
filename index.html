@@ -801,35 +801,31 @@
   <div class="prize-list">
     <h3>🎁 奖品池 🎁</h3>
     <ul>
-      <li class="prize-card rare" style="--c1:#ffb6dc;--c2:#ff6fa8">
+      <li class="prize-card" style="--c1:#ffb6dc;--c2:#ff6fa8">
         <span class="prize-emoji">🧋</span>
         <span class="prize-name">一杯奶茶</span>
       </li>
-      <li class="prize-card rare" style="--c1:#ff8ec0;--c2:#c0247c">
+      <li class="prize-card" style="--c1:#ff8ec0;--c2:#c0247c">
         <span class="prize-emoji">🍢</span>
         <span class="prize-name">烧烤大餐</span>
       </li>
-      <li class="prize-card rare" style="--c1:#ffe17a;--c2:#ff8a4a">
+      <li class="prize-card" style="--c1:#ffe17a;--c2:#ff8a4a">
         <span class="prize-emoji">🎂</span>
         <span class="prize-name">一个小蛋糕</span>
-      </li>
-      <li class="prize-card" style="--c1:#7dd3fc;--c2:#3b82f6">
-        <span class="prize-emoji">🍿</span>
-        <span class="prize-name">看一场电影</span>
       </li>
       <li class="prize-card" style="--c1:#ffb84a;--c2:#ef4444">
         <span class="prize-emoji">🌹</span>
         <span class="prize-name">一束玫瑰花</span>
       </li>
-      <li class="prize-card" style="--c1:#c19bff;--c2:#7c3aed">
+      <li class="prize-card rare" style="--c1:#c19bff;--c2:#7c3aed">
         <span class="prize-emoji">💄</span>
         <span class="prize-name">一支口红</span>
       </li>
-      <li class="prize-card" style="--c1:#f9a8d4;--c2:#a855f7">
+      <li class="prize-card rare" style="--c1:#f9a8d4;--c2:#a855f7">
         <span class="prize-emoji">🛍️</span>
         <span class="prize-name">陪你逛街</span>
       </li>
-      <li class="prize-card" style="--c1:#fda4af;--c2:#be123c">
+      <li class="prize-card rare" style="--c1:#fda4af;--c2:#be123c">
         <span class="prize-emoji">🥩</span>
         <span class="prize-name">一顿牛排</span>
       </li>
@@ -888,25 +884,32 @@
 
   // ===== 配置 =====
   // 转盘上显示的所有扇区（顺时针，从正上方第一个开始）
-  // winnable 表示是否会真的被抽到
   const SECTORS = [
-    { name: '奶茶',     emoji: '🧋', color: '#ff8ac0', winnable: true,  type: 'milktea' },
-    { name: '看电影',   emoji: '🍿', color: '#5ec8ff', winnable: false, type: 'fake' },
-    { name: '谢谢惠顾', emoji: '😢', color: '#c19bff', winnable: true,  type: 'none' },
-    { name: '一束花',   emoji: '🌹', color: '#ffb84a', winnable: false, type: 'fake' },
-    { name: '烧烤',     emoji: '🍢', color: '#ff6fa8', winnable: true,  type: 'bbq' },
-    { name: '小蛋糕',   emoji: '🎂', color: '#ffe17a', winnable: true,  type: 'cake' },
-    { name: '口红',     emoji: '💄', color: '#7dd3fc', winnable: false, type: 'fake' },
-    { name: '谢谢惠顾', emoji: '😢', color: '#f472b6', winnable: true,  type: 'none' },
+    { name: '奶茶',     emoji: '🧋', color: '#ff8ac0', winnable: true, type: 'milktea'  },
+    { name: '谢谢惠顾', emoji: '😢', color: '#94a3b8', winnable: true, type: 'none'     },
+    { name: '烧烤',     emoji: '🍢', color: '#ff6fa8', winnable: true, type: 'bbq'      },
+    { name: '一束花',   emoji: '🌹', color: '#ffb84a', winnable: true, type: 'flower'   },
+    { name: '谢谢惠顾', emoji: '😢', color: '#cbd5e1', winnable: true, type: 'none'     },
+    { name: '小蛋糕',   emoji: '🎂', color: '#ffe17a', winnable: true, type: 'cake'     },
+    { name: '口红',     emoji: '💄', color: '#c19bff', winnable: true, type: 'lipstick' },
+    { name: '谢谢惠顾', emoji: '😢', color: '#9ca3af', winnable: true, type: 'none'     },
+    { name: '牛排',     emoji: '🥩', color: '#ef4444', winnable: true, type: 'steak'    },
+    { name: '陪逛街',   emoji: '🛍️', color: '#a855f7', winnable: true, type: 'shopping' },
+    { name: '谢谢惠顾', emoji: '😢', color: '#6b7280', winnable: true, type: 'none'     },
   ];
 
-  // 抽奖概率：20% 奶茶 / 5% 烧烤 / 5% 蛋糕 / 70% 谢谢惠顾
+  // 抽奖概率：奶茶 25% / 烧烤 6% / 蛋糕 4% / 花 2%
+  // 口红 / 陪逛街 / 牛排 各 0.1%（千分之一隐藏大奖）/ 谢谢惠顾 62.7%
   function drawType() {
-    const r = Math.random() * 100;
-    if (r < 20) return 'milktea';
-    if (r < 25) return 'bbq';
-    if (r < 30) return 'cake';
-    return 'none';
+    const r = Math.random() * 1000; // 用千分位，方便表达 0.1%
+    if (r < 250) return 'milktea';                 // 25%
+    if (r < 310) return 'bbq';                     // +6%
+    if (r < 350) return 'cake';                    // +4%
+    if (r < 370) return 'flower';                  // +2%
+    if (r < 371) return 'lipstick';                // +0.1%
+    if (r < 372) return 'shopping';                // +0.1%
+    if (r < 373) return 'steak';                   // +0.1%
+    return 'none';                                 // 62.7%
   }
 
   // 中奖文案
@@ -928,6 +931,30 @@
       title: '甜蜜大奖！',
       prize: '一个小蛋糕',
       msg: '哇～甜甜的小蛋糕到手 🍰 喜欢什么口味告诉我，明天给你买！',
+    },
+    flower: {
+      emoji: '🌹',
+      title: '浪漫盛开！',
+      prize: '一束玫瑰花',
+      msg: '哇～中了一束玫瑰花 🌹 等小宝挑一束最好看的抱回家给你～',
+    },
+    lipstick: {
+      emoji: '💄',
+      title: '✨ 隐藏大奖 ✨',
+      prize: '一支口红',
+      msg: '哇哦！神仙运气！中了千分之一的口红大奖 💄 想要哪个色号告诉我，立刻安排！',
+    },
+    shopping: {
+      emoji: '🛍️',
+      title: '✨ 隐藏大奖 ✨',
+      prize: '陪你逛街一天',
+      msg: '哇哦！神仙运气！中了千分之一的逛街大奖 🛍️ 想去哪我陪你逛到腿软～',
+    },
+    steak: {
+      emoji: '🥩',
+      title: '✨ 隐藏大奖 ✨',
+      prize: '一顿牛排',
+      msg: '哇哦！神仙运气！中了千分之一的牛排大奖 🥩 这周末走起，要几分熟告诉我～',
     },
     none: {
       emoji: '😢',
