@@ -332,6 +332,20 @@
   .info b { color: #ffd86b; font-weight: 800; }
   .info .sep { margin: 0 4px; opacity: 0.5; }
   .today-result b { color: #ff8ec8; }
+  .today-result .pick-detail {
+    color: #fff;
+    background: linear-gradient(135deg, #ff6fa8, #c0247c);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    margin-left: 6px;
+    box-shadow: 0 2px 6px rgba(192, 36, 124, 0.45);
+  }
+  .info {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
 
   /* 奖品列表 */
   .prize-list {
@@ -898,18 +912,18 @@
     { name: '谢谢惠顾', emoji: '😢', color: '#6b7280', winnable: true, type: 'none'     },
   ];
 
-  // 抽奖概率：奶茶 25% / 烧烤 6% / 蛋糕 4% / 花 2%
-  // 口红 / 陪逛街 / 牛排 各 0.1%（千分之一隐藏大奖）/ 谢谢惠顾 62.7%
+  // 抽奖概率：奶茶 10% / 烧烤 3% / 蛋糕 2% / 花 1%
+  // 口红 / 陪逛街 / 牛排 各 0.1%（千分之一隐藏大奖）/ 谢谢惠顾 83.7%
   function drawType() {
     const r = Math.random() * 1000; // 用千分位，方便表达 0.1%
-    if (r < 250) return 'milktea';                 // 25%
-    if (r < 310) return 'bbq';                     // +6%
-    if (r < 350) return 'cake';                    // +4%
-    if (r < 370) return 'flower';                  // +2%
-    if (r < 371) return 'lipstick';                // +0.1%
-    if (r < 372) return 'shopping';                // +0.1%
-    if (r < 373) return 'steak';                   // +0.1%
-    return 'none';                                 // 62.7%
+    if (r < 100) return 'milktea';                 // 10%
+    if (r < 130) return 'bbq';                     // +3%
+    if (r < 150) return 'cake';                    // +2%
+    if (r < 160) return 'flower';                  // +1%
+    if (r < 161) return 'lipstick';                // +0.1%
+    if (r < 162) return 'shopping';                // +0.1%
+    if (r < 163) return 'steak';                   // +0.1%
+    return 'none';                                 // 83.7%
   }
 
   // 中奖文案
@@ -1699,9 +1713,33 @@
     }
   }
 
+  function getPickDetail(type) {
+    try {
+      if (type === 'milktea') {
+        return JSON.parse(localStorage.getItem('pick_milktea') || 'null');
+      }
+      if (type === 'cake') {
+        return JSON.parse(localStorage.getItem('pick_cake') || 'null');
+      }
+      if (type === 'bbq') {
+        const arr = JSON.parse(localStorage.getItem('pick_bbq') || '[]');
+        return arr.length ? arr.join('、') : null;
+      }
+    } catch (e) {}
+    return null;
+  }
+
   function showTodayBadge(type) {
     const cfg = RESULT_TEXTS[type] || RESULT_TEXTS.none;
+    const detail = getPickDetail(type);
     todayPrizeEl.textContent = cfg.emoji + ' ' + cfg.prize;
+    if (detail) {
+      const span = document.createElement('span');
+      span.className = 'pick-detail';
+      span.textContent = '· ' + detail;
+      todayPrizeEl.appendChild(document.createTextNode(' '));
+      todayPrizeEl.appendChild(span);
+    }
     todayResultEl.style.display = '';
   }
 
@@ -1807,7 +1845,7 @@
   const CAKE_OPTIONS    = ['🍓 草莓','🍫 巧克力','🧀 芝士','🍵 抹茶','🍑 水蜜桃','🥭 芒果','🥥 椰子','🍮 焦糖','🍌 香蕉'];
 
   // 单选 chip 渲染（奶茶/蛋糕）
-  function renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey) {
+  function renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey, badgeType) {
     const wrap = document.getElementById(wrapId);
     const customs = JSON.parse(localStorage.getItem(customKey) || '[]');
     const saved = JSON.parse(localStorage.getItem(savedKey) || 'null');
@@ -1825,6 +1863,7 @@
       wrap.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
       if (alreadyChipEl) alreadyChipEl.classList.add('selected');
       savedEl.textContent = `已记下：${v} ${savedSuffix}`;
+      if (badgeType) showTodayBadge(badgeType);
       playTick();
     };
     wrap.querySelectorAll('.chip').forEach(c => {
@@ -1844,16 +1883,17 @@
       input.value = '';
       // 重新渲染（保留选中 v）
       localStorage.setItem(savedKey, JSON.stringify(v));
-      renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey);
+      if (badgeType) showTodayBadge(badgeType);
+      renderSingle(wrapId, savedKey, defaults, savedSuffix, customKey, badgeType);
     };
     addBtn.addEventListener('click', addCustom);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
   }
   function renderMilktea() {
-    renderSingle('milkteaChips', 'pick_milktea', MILKTEA_OPTIONS, '✅ 小宝已收到～', 'custom_milktea');
+    renderSingle('milkteaChips', 'pick_milktea', MILKTEA_OPTIONS, '✅ 小宝已收到～', 'custom_milktea', 'milktea');
   }
   function renderCake() {
-    renderSingle('cakeChips', 'pick_cake', CAKE_OPTIONS, '✅ 小宝已收到～', 'custom_cake');
+    renderSingle('cakeChips', 'pick_cake', CAKE_OPTIONS, '✅ 小宝已收到～', 'custom_cake', 'cake');
   }
   // 多选 chip 渲染（烧烤）
   function renderBbq() {
@@ -1874,6 +1914,7 @@
       const arr = Array.from(set);
       localStorage.setItem('pick_bbq', JSON.stringify(arr));
       savedEl.textContent = arr.length ? `已记下 ${arr.length} 样 ✅` : '';
+      showTodayBadge('bbq');
     };
     wrap.querySelectorAll('.chip').forEach(c => {
       c.addEventListener('click', () => {
